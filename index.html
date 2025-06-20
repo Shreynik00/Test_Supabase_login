@@ -1,50 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Login - Askit</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <title>Google Login</title>
+  <meta name="google-signin-client_id" content="190022392096-5vl5tfqup2d8tdtgof9m68phhc8qh77u.apps.googleusercontent.com">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
-
 </head>
 <body>
-  <div>
-    <h1>Welcome to Askit</h1>
-    <h5>
-      Describe your task, review your offers & choose a service provider best for you.
-    </h5>
 
-    <div>
-      <h2>Login</h2>
+<h2>Login with Google</h2>
+<div id="googleSignInDiv"></div>
 
-      <div id="g_id_onload"
-           data-client_id="190022392096-5vl5tfqup2d8tdtgof9m68phhc8qh77u.apps.googleusercontent.com"
-           data-callback="handleCredentialResponse"
-           data-auto_prompt="false">
-      </div>
-
-      <div class="g_id_signin"
-           data-type="standard"
-           data-size="large"
-           data-theme="outline"
-           data-text="sign_in_with"
-           data-shape="rectangular"
-           data-logo_alignment="left">
-      </div>
-
-      <div id="loginMessage" style="color:red;"></div>
-    </div>
-
-    <div>
-      <h3>Don't have an account? <a href="signup.html"><strong>Sign Up</strong></a></h3>
-    </div>
-  </div>
-
-  <script>
-     function handleCredentialResponse(response) {
-    const decoded = jwt_decode(response.credential); // Decode JWT
+<script>
+  function handleCredentialResponse(response) {
+    const decoded = jwt_decode(response.credential);
 
     const user = {
       email: decoded.email,
@@ -52,7 +21,7 @@
       googleId: decoded.sub
     };
 
-    // Now send actual user data to your backend
+    // Send user data to your backend
     fetch("https://test-supabse-backend.onrender.com/google-login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -61,25 +30,28 @@
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        alert("Logged in as " + user.email);
-        // Redirect or proceed
+        alert("Welcome " + user.name);
       } else {
         alert("Login failed");
       }
     })
-    .catch(err => console.error("Login error:", err));
+    .catch(error => {
+      console.error("Login error:", error);
+    });
   }
 
   window.onload = function () {
     google.accounts.id.initialize({
-      client_id: "YOUR_GOOGLE_CLIENT_ID",
+      client_id: "190022392096-5vl5tfqup2d8tdtgof9m68phhc8qh77u.apps.googleusercontent.com",
       callback: handleCredentialResponse
     });
+
     google.accounts.id.renderButton(
       document.getElementById("googleSignInDiv"),
       { theme: "outline", size: "large" }
     );
   };
-  </script>
+</script>
+
 </body>
 </html>
