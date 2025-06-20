@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Askit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <div>
+    <h1>Welcome to Askit</h1>
+    <h5>
+      Describe your task, review your offers & choose a service provider best for you.
+    </h5>
+
+    <div>
+      <h2>Login</h2>
+
+      <div id="g_id_onload"
+           data-client_id="190022392096-5vl5tfqup2d8tdtgof9m68phhc8qh77u.apps.googleusercontent.com"
+           data-callback="handleCredentialResponse"
+           data-auto_prompt="false">
+      </div>
+
+      <div class="g_id_signin"
+           data-type="standard"
+           data-size="large"
+           data-theme="outline"
+           data-text="sign_in_with"
+           data-shape="rectangular"
+           data-logo_alignment="left">
+      </div>
+
+      <div id="loginMessage" style="color:red;"></div>
+    </div>
+
+    <div>
+      <h3>Don't have an account? <a href="signup.html"><strong>Sign Up</strong></a></h3>
+    </div>
+  </div>
+
+  <script>
+    async function handleCredentialResponse(response) {
+      const token = response.credential;
+
+      try {
+        const res = await fetch("http://localhost:3000/google-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+
+        if (!res.ok) {
+          throw new Error("Login failed. Please try again.");
+        }
+
+        const data = await res.json();
+        if (data.success) {
+          // ✅ Redirect to role selection or dashboard
+          window.location.href = `https://shreynik00.github.io/Askit/role-selection.html?username=${encodeURIComponent(data.user.username)}&email=${encodeURIComponent(data.user.email)}`;
+        } else {
+          document.getElementById("loginMessage").textContent = data.message || "Login failed.";
+        }
+      } catch (err) {
+        console.error("Error:", err);
+        document.getElementById("loginMessage").textContent = "Login failed. Try again later.";
+      }
+    }
+  </script>
+</body>
+</html>
