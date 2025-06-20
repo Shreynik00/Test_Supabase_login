@@ -45,7 +45,7 @@
       const token = response.credential;
 
       try {
-        const res = await fetch("http://localhost:3000/google-login", {
+        const res = await fetch("https://test-supabse-backend.onrender.com/google-login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token }),
