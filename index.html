@@ -1,62 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Google Login</title>
   <meta name="google-signin-client_id" content="190022392096-5vl5tfqup2d8tdtgof9m68phhc8qh77u.apps.googleusercontent.com">
+  
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
 </head>
 <body>
 
-<h2>Login with Google</h2>
-<div id="googleSignInDiv"></div>
+  <h2>Login with Google</h2>
+  <div id="googleSignInDiv"></div>
 
-<script>
-<script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
-<script>
-  function handleCredentialResponse(response) {
-    const decoded = jwt_decode(response.credential);
-    const email = decoded.email;
-    const username = decoded.name;
-    const googleId = decoded.sub;
+  <script>
+    function handleCredentialResponse(response) {
+      const decoded = jwt_decode(response.credential);
 
-    fetch("https://test-supabse-backend.onrender.com/google-login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        email: email,
-        username: username,
-        googleId: googleId
+      const user = {
+        email: decoded.email,
+        username: decoded.name,  // match backend field
+        googleId: decoded.sub
+      };
+
+      fetch("https://test-supabse-backend.onrender.com/google-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(user)
       })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        console.log("Login successful");
-        // redirect or show something
-      } else {
-        console.error("Login failed:", data.message);
-      }
-    })
-    .catch(error => console.error("Error:", error));
-  }
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert("Welcome, " + user.username + "!");
+          // Optionally redirect:
+          // window.location.href = "/dashboard";
+        } else {
+          alert("Login failed: " + (data.message || "Unknown error"));
+        }
+      })
+      .catch(error => {
+        console.error("Login error:", error);
+        alert("Something went wrong during login.");
+      });
+    }
 
-  window.onload = function () {
-    google.accounts.id.initialize({
-      client_id: "YOUR_GOOGLE_CLIENT_ID",
-      callback: handleCredentialResponse
-    });
+    window.onload = function () {
+      google.accounts.id.initialize({
+        client_id: "190022392096-5vl5tfqup2d8tdtgof9m68phhc8qh77u.apps.googleusercontent.com",
+        callback: handleCredentialResponse
+      });
 
-    google.accounts.id.renderButton(
-      document.getElementById("googleBtn"),
-      { theme: "outline", size: "large" }
-    );
-  };
-</script>
-
-</script>
+      google.accounts.id.renderButton(
+        document.getElementById("googleSignInDiv"),
+        { theme: "outline", size: "large" }
+      );
+    };
+  </script>
 
 </body>
 </html>
