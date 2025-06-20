@@ -41,32 +41,43 @@
   </div>
 
   <script>
-    async function handleCredentialResponse(response) {
-      const token = response.credential;
+     function handleCredentialResponse(response) {
+    const decoded = jwt_decode(response.credential); // Decode JWT
 
-      try {
-        const res = await fetch("https://test-supabse-backend.onrender.com/google-login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token }),
-        });
+    const user = {
+      email: decoded.email,
+      name: decoded.name,
+      googleId: decoded.sub
+    };
 
-        if (!res.ok) {
-          throw new Error("Login failed. Please try again.");
-        }
-
-        const data = await res.json();
-        if (data.success) {
-          // ✅ Redirect to role selection or dashboard
-          window.location.href = `https://shreynik00.github.io/Askit/role-selection.html?username=${encodeURIComponent(data.user.username)}&email=${encodeURIComponent(data.user.email)}`;
-        } else {
-          document.getElementById("loginMessage").textContent = data.message || "Login failed.";
-        }
-      } catch (err) {
-        console.error("Error:", err);
-        document.getElementById("loginMessage").textContent = "Login failed. Try again later.";
+    // Now send actual user data to your backend
+    fetch("https://test-supabse-backend.onrender.com/google-login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(user)
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert("Logged in as " + user.email);
+        // Redirect or proceed
+      } else {
+        alert("Login failed");
       }
-    }
+    })
+    .catch(err => console.error("Login error:", err));
+  }
+
+  window.onload = function () {
+    google.accounts.id.initialize({
+      client_id: "YOUR_GOOGLE_CLIENT_ID",
+      callback: handleCredentialResponse
+    });
+    google.accounts.id.renderButton(
+      document.getElementById("googleSignInDiv"),
+      { theme: "outline", size: "large" }
+    );
+  };
   </script>
 </body>
 </html>
