@@ -3,78 +3,57 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="google-signin-client_id" content="190022392096-5vl5tfqup2d8tdtgof9m68phhc8qh77u.apps.googleusercontent.com" />
+  <title>Google Login</title>
 
-  <title>Signup & Google Login</title>
-  
-  <!-- Google Sign-In -->
+  <!-- Google Sign-In & JWT Decode -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-  <style>
-    #googleLoginButton {
-      background-color: white !important;
-      color: black !important;
-      border: 1px solid cyan !important;
-      padding: 5px 10px;
-      font-size: 13px;
-      cursor: pointer;
-      display: inline-block;
-      border-radius: 4px;
-      text-align: center;
-    }
-
-    #googleLoginButton:hover {
-      background-color: cyan !important;
-      color: black !important;
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding-top: 100px;
-      background: #f4f4f4;
-    }
-
-    h1 {
-      color: #0077cc;
-    }
-  </style>
+  <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
 </head>
-
 <body>
-  <div>
-    <h1>Askit</h1>
 
-    <h3>Sign in with Google</h3>
-    <div id="googleLoginButton"></div>
-  </div>
+  <h2>Login with Google</h2>
+  <div id="googleSignInDiv"></div>
 
   <script>
-    // Google Login Handler
     function handleCredentialResponse(response) {
-      console.log("Encoded JWT ID token: " + response.credential);
+      try {
+        const decoded = jwt_decode(response.credential);
 
-      fetch('https://test-supabse-backend.onrender.com/google-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: response.credential })
-      })
-        .then(res => res.json())
+        const user = {
+          email: decoded.email,
+          username: decoded.name,
+          googleId: decoded.sub
+        };
+
+        fetch("https://test-supabse-backend.onrender.com/google-login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(user)
+        })
+        .then(res => {
+          if (!res.ok) throw new Error("Network response was not ok");
+          return res.json();
+        })
         .then(data => {
           if (data.success) {
-            alert("Google Login Successful! Redirecting...");
-            window.location.href = "https://askitindia.github.io/Askit/login.html";  // Redirect after login
+            alert("Welcome, " + user.username + "!");
           } else {
-            alert("Google Login Failed: " + (data.error || 'Unknown error'));
+            alert("Login failed: " + (data.message || "Unknown error"));
           }
         })
         .catch(error => {
-          console.error("Google login error:", error);
-          alert("Something went wrong. Please try again.");
+          console.error("Login error:", error);
+          alert("Something went wrong during login.");
         });
+
+      } catch (err) {
+        console.error("JWT Decode Error:", err);
+        alert("Invalid token received.");
+      }
     }
 
-    // Load Google Sign-In
     window.onload = function () {
       google.accounts.id.initialize({
         client_id: "190022392096-5vl5tfqup2d8tdtgof9m68phhc8qh77u.apps.googleusercontent.com",
@@ -82,10 +61,13 @@
       });
 
       google.accounts.id.renderButton(
-        document.getElementById("googleLoginButton"),
+        document.getElementById("googleSignInDiv"),
         { theme: "outline", size: "large" }
       );
+
+      google.accounts.id.prompt(); // Optional: shows one-tap prompt
     };
   </script>
+
 </body>
 </html>
