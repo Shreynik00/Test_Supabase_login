@@ -8,8 +8,9 @@
   <!-- Google Sign-In & JWT Decode -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
-  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
 
+  <!-- Fix window.postMessage issue -->
+  <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
 </head>
 <body>
 
@@ -17,28 +18,32 @@
   <div id="googleSignInDiv"></div>
 
   <script>
-   function handleCredentialResponse(response) {
-  fetch("https://test-supabse-backend.onrender.com/google-login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: response.credential }) // ✅ Correct structure
-  })
-  .then(res => {
-    if (!res.ok) throw new Error("Network response was not ok");
-    return res.json();
-  })
-  .then(data => {
-    if (data.success) {
-      alert("Welcome, " + data.user.username);
-    } else {
-      alert("Login failed: " + (data.message || "Unknown error"));
-    }
-  })
-  .catch(error => {
-    console.error("Login error:", error);
-    alert("Something went wrong during login.");
-  });
-}
+    function handleCredentialResponse(response) {
+      try {
+        // Optional: decode if needed
+        const decoded = jwt_decode(response.credential);
+        console.log("Decoded Token:", decoded);
+
+        fetch("https://test-supabse-backend.onrender.com/google-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: response.credential }) // ✅ Correct payload
+        })
+        .then(res => {
+          if (!res.ok) throw new Error("Network response was not ok");
+          return res.json();
+        })
+        .then(data => {
+          if (data.success) {
+            alert("Welcome, " + data.user.username);
+          } else {
+            alert("Login failed: " + (data.message || "Unknown error"));
+          }
+        })
+        .catch(error => {
+          console.error("Login error:", error);
+          alert("Something went wrong during login.");
+        });
 
       } catch (err) {
         console.error("JWT Decode Error:", err);
@@ -57,7 +62,7 @@
         { theme: "outline", size: "large" }
       );
 
-      google.accounts.id.prompt(); // Optional: shows one-tap prompt
+      google.accounts.id.prompt(); // Optional one-tap
     };
   </script>
 
